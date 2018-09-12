@@ -44,7 +44,7 @@ func (c *TcpConnection) Close() {
 func (c *TcpConnection) sendLoop() {
 	for {
 		select {
-		case packet <- c.sendChan:
+		case packet := <-c.sendChan:
 		case <-c.closeChan:
 			return
 		}
@@ -54,7 +54,7 @@ func (c *TcpConnection) sendLoop() {
 func (c *TcpConnection) handleRecv() {
 	for {
 		select {
-		case packet <- c.recvChan:
+		case packet := <-c.recvChan:
 			c.Callback.OnMessage(c, packet)
 
 		case <-c.closeChan:
