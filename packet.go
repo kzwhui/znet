@@ -52,7 +52,7 @@ func (p *Packet) Unmarshal(stream []byte) (err error) {
 // >= 0 -- 包长度超出多少
 func (p *Packet) Check(stream []byte) int64 {
 	streamLen := int64(len(stream))
-	if len(stream) < 5 {
+	if len(stream) < 4 {
 		return -1
 	}
 
