@@ -22,7 +22,7 @@ func (m *MsgCallBack) OnConnect(c *znet.TcpConnection) (err error) {
 func (m *MsgCallBack) OnMessage(c *znet.TcpConnection, p znet.PacketInterface) (err error) {
 	rawPacket := p.(*znet.Packet)
 	fmt.Println("recv: ", string(rawPacket.Data))
-	rawPacket.Data = append(rawPacket.Data, []byte(" too")...)
+	rawPacket.Data = []byte("amazing!!!")
 	c.AsyncSend(p, 0)
 	fmt.Println("reply: ", string(rawPacket.Data))
 	return
