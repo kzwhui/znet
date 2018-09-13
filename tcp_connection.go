@@ -117,6 +117,7 @@ func (c *TcpConnection) sendLoop() {
 				return
 			}
 
+			c.conn.SetWriteDeadline(time.Now().Add(time.Duration(300) * time.Millisecond))
 			stream, _ := packet.Marshal()
 			for total, start := len(stream), 0; start < total; {
 				if n, err := c.conn.Write(stream[start:]); err == nil {

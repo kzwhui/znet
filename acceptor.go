@@ -11,6 +11,7 @@ type Acceptor struct {
 	callback  ConnCallBackInterface
 	tcpAddr   *net.TCPAddr
 	listener  *net.TCPListener
+	closeOnce sync.Once // 一个连接关闭，只能关闭一次
 	closeChan chan struct{}
 	exitChan  chan struct{}
 	wg        *sync.WaitGroup
@@ -44,7 +45,7 @@ func (a *Acceptor) Listen() (err error) {
 	go func() {
 		a.wg.Add(1)
 		defer func() {
-			a.listener.Close()
+			a.Close()
 			a.wg.Done()
 			log.Println("acceptor close")
 		}()
@@ -73,6 +74,9 @@ func (a *Acceptor) Listen() (err error) {
 	return
 }
 
-func (a *Acceptor) Stop() {
-	close(a.closeChan)
+func (a *Acceptor) Close() {
+	a.closeOnce.Do(func() {
+		close(a.closeChan)
+		a.listener.Close()
+	})
 }
