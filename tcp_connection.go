@@ -28,6 +28,9 @@ type TcpConnection struct {
 }
 
 func NewTcpConn(conn *net.TCPConn, callback ConnCallBackInterface, wg *sync.WaitGroup, exitChan chan struct{}) *TcpConnection {
+	// 设置心跳时间
+	conn.SetKeepAlivePeriod(600 * time.Minute)
+
 	return &TcpConnection{
 		callback:  callback,
 		conn:      conn,
