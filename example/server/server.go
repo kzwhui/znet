@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"git.code.oa.com/go_search_offline_service/znet"
+	"github.com/kzwhui/znet"
 )
 
 type MsgCallBack struct {

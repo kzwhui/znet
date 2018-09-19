@@ -6,9 +6,9 @@ type TCPClient struct {
 	connectionPool *ConnectionPool
 }
 
-func NewTCPClient(poolnum int, ipPort string, zkname string) *TCPClient {
+func NewTCPClient(poolnum int, ipPort string) *TCPClient {
 	return &TCPClient{
-		connectionPool: NewConnectionPool(poolnum, ipPort, zkname),
+		connectionPool: NewConnectionPool(poolnum, ipPort),
 	}
 }
 

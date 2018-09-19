@@ -2,22 +2,17 @@ package znet
 
 import (
 	"errors"
-	"fmt"
-
-	"code.oa.com/kt/nameapi"
 )
 
 type ConnectionPool struct {
 	poolChan chan *Connector
 	ipPort   string
-	zkname   string
 }
 
-func NewConnectionPool(num int, ipPort string, zkname string) *ConnectionPool {
+func NewConnectionPool(num int, ipPort string) *ConnectionPool {
 	pool := &ConnectionPool{
 		poolChan: make(chan *Connector, num),
 		ipPort:   ipPort,
-		zkname:   zkname,
 	}
 
 	for i := 0; i < num; i++ {
@@ -56,11 +51,6 @@ func (c *ConnectionPool) Pop() (conn *Connector, err error) {
 	select {
 	case conn = <-c.poolChan:
 		if conn == nil {
-			var ip string
-			var port int
-			if ip, port, err = nameapi.GetHostByKey(c.zkname); err == nil {
-				c.ipPort = fmt.Sprintf("%v:%v", ip, port)
-			}
 			conn, err = NewConnector(c.ipPort)
 		}
 

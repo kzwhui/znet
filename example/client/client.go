@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	"git.code.oa.com/go_search_offline_service/znet"
+	"github.com/kzwhui/znet"
 )
 
 func main() {
 	host := "127.0.0.1:2345"
-	client := znet.NewTCPClient(5, host, "")
+	client := znet.NewTCPClient(5, host)
 
 	for i := 0; i < 30; i++ {
 		request := &znet.Packet{
