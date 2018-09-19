@@ -3,7 +3,6 @@ package znet
 import (
 	"bytes"
 	"errors"
-	"log"
 	"net"
 	"time"
 )
@@ -12,18 +11,21 @@ type Connector struct {
 	conn *net.TCPConn
 }
 
-func NewConnector() *Connector {
-	return &Connector{}
+func NewConnector(ipPort string) (connector *Connector, err error) {
+	connector = &Connector{}
+	err = connector.Connect(ipPort, 3*time.Second)
+	return
 }
 
-func (c *Connector) Connect(ip_port string) (err error) {
-	serverAddr, err := net.ResolveTCPAddr("tcp", ip_port)
-	if err != nil {
+func (c *Connector) Connect(ipPort string, timeout time.Duration) (err error) {
+	var commConn net.Conn
+	if commConn, err = net.DialTimeout("tcp", ipPort, timeout); err != nil {
 		return
 	}
 
-	c.conn, err = net.DialTCP("tcp", nil, serverAddr)
-	if err != nil {
+	var ok bool
+	if c.conn, ok = commConn.(*net.TCPConn); !ok {
+		err = errors.New("connect timeout")
 		return
 	}
 
@@ -31,18 +33,29 @@ func (c *Connector) Connect(ip_port string) (err error) {
 }
 
 func (c *Connector) Close() {
-	c.conn.Close()
+	if c.conn != nil {
+		c.conn.Close()
+	}
+	c.conn = nil
 }
 
 // 同步
 func (c *Connector) Send(packet PacketInterface, timeout time.Duration) (err error) {
+	if c.conn == nil {
+		err = errors.New("no connection")
+		return
+	}
+
 	c.conn.SetWriteDeadline(time.Now().Add(timeout))
 	stream, _ := packet.Marshal()
+	//log.Printf("send packet hex: %v\n", hex.EncodeToString(stream))
 	var n int
 	for total, start := len(stream), 0; start < total; {
 		if n, err = c.conn.Write(stream[start:]); err == nil {
 			start = start + n
 		} else {
+			c.Close()
+			err = errors.New("connection error")
 			return
 		}
 	}
@@ -52,6 +65,11 @@ func (c *Connector) Send(packet PacketInterface, timeout time.Duration) (err err
 
 // 同步
 func (c *Connector) Recv(packet PacketInterface, timeout time.Duration) (err error) {
+	if c.conn == nil {
+		err = errors.New("no connection")
+		return
+	}
+
 	var packetBuf bytes.Buffer
 	recvBuf := make([]byte, 1024)
 	var n int
@@ -66,7 +84,7 @@ func (c *Connector) Recv(packet PacketInterface, timeout time.Duration) (err err
 
 		if n <= 0 {
 			c.Close()
-			err = errors.New("connection close")
+			err = errors.New("connection error")
 			return
 		}
 
@@ -77,7 +95,6 @@ func (c *Connector) Recv(packet PacketInterface, timeout time.Duration) (err err
 		}
 
 		if err = packet.Unmarshal(packetBuf.Next(packetBuf.Len() - int(extra))); err != nil {
-			log.Println("fail to parse packet")
 			c.Close()
 			return
 		} else {
