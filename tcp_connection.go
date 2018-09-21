@@ -50,8 +50,11 @@ func (c *TcpConnection) StartLoop() {
 		return
 	}
 
+	c.wg.Add(1)
 	go c.sendLoop()
+	c.wg.Add(1)
 	go c.recvLoop()
+	c.wg.Add(1)
 	go c.handleRecv()
 }
 
@@ -106,7 +109,6 @@ func (c *TcpConnection) GetRawConn() *net.TCPConn {
 }
 
 func (c *TcpConnection) sendLoop() {
-	c.wg.Add(1)
 	defer c.wg.Done()
 
 	for {
@@ -140,7 +142,6 @@ func (c *TcpConnection) sendLoop() {
 }
 
 func (c *TcpConnection) handleRecv() {
-	c.wg.Add(1)
 	defer c.wg.Done()
 
 	for {
@@ -165,7 +166,6 @@ func (c *TcpConnection) handleRecv() {
 }
 
 func (c *TcpConnection) recvLoop() {
-	c.wg.Add(1)
 	defer c.wg.Done()
 
 	var packetBuf bytes.Buffer

@@ -42,8 +42,8 @@ func (a *Acceptor) Listen() (err error) {
 
 	log.Printf("listen addr=%v\n", a.listener.Addr())
 
+	a.wg.Add(1)
 	go func() {
-		a.wg.Add(1)
 		defer func() {
 			a.Close()
 			a.wg.Done()
